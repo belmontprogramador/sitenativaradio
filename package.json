@@ -2,13 +2,11 @@
   "name": "site-nativa",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint",
-    "export": "next export"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "node .next/standalone/server.js"
+},
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",

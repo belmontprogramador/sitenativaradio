@@ -1,13 +1,22 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  images: { unoptimized: true },
-  experimental: {
-    serverActions: { allowedOrigins: ["*"] },
+  images: {
+    unoptimized: true,
   },
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["*"],
+    },
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

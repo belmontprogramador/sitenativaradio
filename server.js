@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const serverPath = path.join(__dirname, ".next", "standalone", "server.js");
 
-// Railway usa PORT=8080
 const port = process.env.PORT || "8080";
 const host = process.env.HOST || "0.0.0.0";
 
@@ -15,7 +14,7 @@ const child = spawn("node", [serverPath], {
   stdio: "inherit",
   env: {
     ...process.env,
-    PORT: port, // 🔥 garante que o Next ouça a porta correta no Railway
+    PORT: port, // força usar porta correta
     HOST: host,
   },
 });
@@ -24,6 +23,6 @@ child.on("close", (code) => {
   console.log(`🧱 Servidor encerrado com código ${code}`);
 });
 
-// evita encerramento precoce
+// manter vivo
 process.on("SIGINT", () => process.exit());
 process.on("SIGTERM", () => process.exit());

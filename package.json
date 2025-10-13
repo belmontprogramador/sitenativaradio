@@ -5,7 +5,7 @@
  "scripts": {
   "dev": "next dev",
   "build": "next build",
-  "start": "node .next/standalone/server.js"
+  "start": "PORT=${PORT:-8080} node .next/standalone/server.js"
 },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

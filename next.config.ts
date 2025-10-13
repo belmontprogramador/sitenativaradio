@@ -1,6 +1,7 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: "standalone", // força gerar .next/standalone
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   images: { unoptimized: true },
   experimental: {

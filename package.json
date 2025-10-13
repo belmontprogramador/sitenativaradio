@@ -2,11 +2,13 @@
   "name": "site-nativa",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "node .next/standalone/server.js"
-  },
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start -p 3000"
+
+},
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",

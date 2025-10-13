@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone", // ✅ Mantém as rotas de API funcionando
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

@@ -5,11 +5,9 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const serverPath = path.join(__dirname, ".next", "standalone", "server.js");
 
-// usa a porta do Railway automaticamente ou 3000 localmente
-const port = process.env.PORT || 3000;
-
-// define o host corretamente conforme o ambiente
-const host = process.env.RAILWAY_ENVIRONMENT ? "0.0.0.0" : "127.0.0.1";
+// 👉 Usa a porta fornecida automaticamente pelo Railway
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+const host = process.env.HOST || "0.0.0.0";
 
 console.log(`🚀 Iniciando servidor Next.js em http://${host}:${port}`);
 

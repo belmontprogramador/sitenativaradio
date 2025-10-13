@@ -2,11 +2,11 @@
   "name": "site-nativa",
   "version": "0.1.0",
   "private": true,
- "scripts": {
-  "dev": "next dev",
-  "build": "next build",
- "start": "HOST=0.0.0.0 PORT=${PORT:-8080} node .next/standalone/server.js"
-},
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node .next/standalone/server.js"
+  },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",

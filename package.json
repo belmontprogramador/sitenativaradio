@@ -2,11 +2,11 @@
   "name": "site-nativa",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "cross-env PORT=3000 next start -p %PORT%"
-  },
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "cross-env PORT=${PORT:-3000} next start -p $PORT"
+},
   "dependencies": {
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.545.0",

@@ -6,8 +6,9 @@ import { NextResponse } from "next/server";
  * 🔑 Gera automaticamente o token de acesso do Spotify
  */
 async function getSpotifyToken() {
-  const client_id = "5a1f6c092f4042d8bcccddf38b838987";
-  const client_secret = "9bfef2f5d87d4bf8b6b2063ff422f702";
+  // 🔒 Em produção, use variáveis de ambiente
+  const client_id = process.env.SPOTIFY_CLIENT_ID || "5a1f6c092f4042d8bcccddf38b838987";
+  const client_secret = process.env.SPOTIFY_CLIENT_SECRET || "9bfef2f5d87d4bf8b6b2063ff422f702";
 
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
@@ -30,13 +31,31 @@ async function getSpotifyToken() {
 }
 
 /**
- * 🔹 Define endpoint local para buscar dados da rádio
+ * 🔹 Resolve automaticamente o endpoint correto (local ou produção)
  */
-const LOCAL_ENDPOINT =
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}/api/info`
-    : "http://localhost:3000/api/info");
+function getLocalEndpoint(request: Request) {
+  const origin = request.headers.get("origin");
+
+  if (origin) {
+    // ✅ Usa o domínio atual automaticamente (funciona em produção e local)
+    return `${origin}/api/info`;
+  }
+
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return `${process.env.NEXT_PUBLIC_BASE_URL}/api/info`;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api/info`;
+  }
+
+  if (process.env.RAILWAY_STATIC_URL) {
+    return `https://${process.env.RAILWAY_STATIC_URL}/api/info`;
+  }
+
+  // fallback local
+  return "http://localhost:3000/api/info";
+}
 
 /**
  * ✅ Rota principal - retorna artista, música e capa do Spotify
@@ -48,8 +67,15 @@ export async function GET(
   const { station } = await context.params;
 
   try {
-    // 1️⃣ Busca as informações da música atual via sua rota local
+    // 1️⃣ Busca informações da música via rota local ou produção
+    const LOCAL_ENDPOINT = getLocalEndpoint(request);
     const infoRes = await fetch(`${LOCAL_ENDPOINT}/${station}`, { cache: "no-store" });
+
+    if (!infoRes.ok) {
+      console.error("Erro ao acessar rota interna:", infoRes.statusText);
+      return NextResponse.json({ error: "Falha ao acessar /api/info" }, { status: 500 });
+    }
+
     const info = await infoRes.json();
 
     if (info.error) {
@@ -59,7 +85,7 @@ export async function GET(
     // 2️⃣ Gera token do Spotify dinamicamente
     const SPOTIFY_TOKEN = await getSpotifyToken();
 
-    // 3️⃣ Monta query para o Spotify
+    // 3️⃣ Busca a música no Spotify
     const query = `${info.artist} ${info.song}`;
     const spotifyRes = await fetch(
       `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
@@ -70,10 +96,15 @@ export async function GET(
       }
     );
 
+    if (!spotifyRes.ok) {
+      console.error("Erro na resposta do Spotify:", spotifyRes.statusText);
+      throw new Error("Falha ao buscar dados no Spotify");
+    }
+
     const spotifyData = await spotifyRes.json();
     const track = spotifyData.tracks?.items?.[0];
 
-    // 4️⃣ Caso a música seja encontrada no Spotify
+    // 4️⃣ Caso encontre a faixa
     if (track) {
       return NextResponse.json({
         artist: info.artist,
@@ -86,7 +117,7 @@ export async function GET(
       });
     }
 
-    // 5️⃣ Caso não encontre a faixa
+    // 5️⃣ Caso não encontre
     return NextResponse.json({
       ...info,
       album: null,

@@ -12,7 +12,7 @@ export default function DownloadApp() {
 
       {/* QR Code */}
       <Image
-        src="/qrcode.png" // 👉 salve o QR code na pasta public/
+        src="/qrcodeNativa.png" // 👉 salve o QR code na pasta public/
         alt="QR Code para baixar o app"
         width={110}
         height={110}

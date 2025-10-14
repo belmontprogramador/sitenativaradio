@@ -13,7 +13,7 @@ export default function DownloadPage() {
       window.location.href =
         "https://apps.apple.com/br/app/nativa-onstreaming/id6741536881";
     } else {
-      window.location.href = "https://google.com";
+      window.location.href = "https://nativaon.com/";
     }
   }, []);
 

@@ -170,23 +170,33 @@ export default function Player({ station, stationKey }: PlayerProps) {
           </div>
 
           {/* Botão Play/Pause visual (mute real) */}
-          <motion.button
-            onClick={toggleMute}
-            title={isMuted ? "Ativar som" : "Silenciar"}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="w-16 h-16 flex items-center justify-center rounded-full bg-[#FD9200] shadow-[0_0_25px_#FD9200] text-white transition relative"
-          >
-            <motion.div
-              key={isMuted ? "pause" : "play"}
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {isMuted ? <Pause size={32} /> : <Play size={32} />}
-            </motion.div>
-          </motion.button>
+<motion.button
+  onClick={toggleMute}
+  title={isMuted ? "Ativar som" : "Silenciar"}
+  whileHover={{ scale: 1.1 }}
+  whileTap={{ scale: 0.9 }}
+  className="
+    w-16 h-16 flex items-center justify-center 
+    rounded-full bg-[#FD9200] 
+    shadow-[0_0_25px_#FD9200] 
+    text-white transition relative z-50
+    active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#FD9200]/50
+  "
+  style={{ touchAction: "manipulation" }} // 🔹 evita bloqueio no mobile
+>
+  <AnimatePresence mode="wait">
+    <motion.div
+      key={isMuted ? "pause" : "play"}
+      initial={{ scale: 0.7, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.7, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {isMuted ? <Pause size={32} /> : <Play size={32} />}
+    </motion.div>
+  </AnimatePresence>
+</motion.button>
+
 
           {/* 🎚 Volume */}
           <div className="flex items-center gap-2 w-full mt-2">

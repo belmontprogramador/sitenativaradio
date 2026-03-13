@@ -10,10 +10,10 @@ import DownloadApp from "@/components/DownloadApp";
 type StationKey = "popular" | "sertanejo" | "gospel" | "pagode";
 
 const STATIONS = [
-  { key: "popular" as StationKey,   name: "Nativa Popular",   baseUrl: "https://stm1.playstm.com:7018", cover: "/radio-nativa-popular.png" },
-  { key: "pagode" as StationKey,    name: "Nativa Pagode",    baseUrl: "https://stm1.playstm.com:7022", cover: "/radio-nativa-pagode.png" },
-  { key: "sertanejo" as StationKey, name: "Nativa Sertanejo", baseUrl: "https://stm1.playstm.com:7014", cover: "/radio-nativa-sertanejo.png" },
-  { key: "gospel" as StationKey,    name: "Nativa Gospel",    baseUrl: "https://stm1.playstm.com:7016", cover: "/radio-nativa-gospel.png" },
+  { key: "popular" as StationKey,   name: "Nativa Popular",   baseUrl: "https://stmplay.com/listen/nativapopular", cover: "/radio-nativa-popular.png" },
+  { key: "pagode" as StationKey,    name: "Nativa Pagode",    baseUrl: "https://stmplay.com/listen/nativapagode", cover: "/radio-nativa-pagode.png" },
+  { key: "sertanejo" as StationKey, name: "Nativa Sertanejo", baseUrl: "https://stmplay.com/listen/nativasertanejo", cover: "/radio-nativa-sertanejo.png" },
+  { key: "gospel" as StationKey,    name: "Nativa Gospel",    baseUrl: "https://stmplay.com/listen/nativagospel", cover: "/radio-nativa-gospel.png" },
 ];
 
 export default function Home() {

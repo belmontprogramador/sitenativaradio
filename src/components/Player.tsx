@@ -226,4 +226,4 @@ export default function Player({ station, stationKey }: PlayerProps) {
       <audio ref={audioRef} preload="auto" />
     </div>
   );
-}
+};

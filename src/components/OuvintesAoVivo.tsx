@@ -2,25 +2,34 @@
 
 import { useEffect, useState } from "react";
 
+const MIN_OUVINTES = 150000;
+const MAX_OUVINTES = 180000;
+const MIN_INTERVAL_MS = 3 * 60 * 1000;
+const MAX_INTERVAL_MS = 5 * 60 * 1000;
+
+function getRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export default function OuvintesAoVivo() {
-  const [ouvintes, setOuvintes] = useState(1503);
+  const [ouvintes, setOuvintes] = useState(MIN_OUVINTES);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOuvintes((prev) => {
-        // Gera um valor aleatório de -50 a +50
-        const variacao = Math.floor(Math.random() * 100 - 50);
-        let novoValor = prev + variacao;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-        // Mantém entre 1500 e 2500
-        if (novoValor < 1500) novoValor = 1500;
-        if (novoValor > 2500) novoValor = 2500;
+    const scheduleNextUpdate = () => {
+      const nextDelay = getRandomInt(MIN_INTERVAL_MS, MAX_INTERVAL_MS);
 
-        return novoValor;
-      });
-    }, 120000); // ⏰ altera a cada 2 minutos
+      timeoutId = setTimeout(() => {
+        setOuvintes(getRandomInt(MIN_OUVINTES, MAX_OUVINTES));
+        scheduleNextUpdate();
+      }, nextDelay);
+    };
 
-    return () => clearInterval(interval);
+    setOuvintes(getRandomInt(MIN_OUVINTES, MAX_OUVINTES));
+    scheduleNextUpdate();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (

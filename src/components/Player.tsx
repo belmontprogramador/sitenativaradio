@@ -16,10 +16,21 @@ type PlayerProps = {
 const REFRESH_INTERVAL = 15000;
 const FALLBACK_IMAGE = "/favicon.ico.png";
 
+function toTitleCase(value: string) {
+  return value
+    .toLocaleLowerCase("pt-BR")
+    .split(/(\s+)/)
+    .map((part) => {
+      if (!part.trim()) return part;
+      return part.charAt(0).toLocaleUpperCase("pt-BR") + part.slice(1);
+    })
+    .join("");
+}
+
 export default function Player({ station, stationKey }: PlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [song, setSong] = useState("Carregando...");
   const [artist, setArtist] = useState("");
@@ -28,41 +39,76 @@ export default function Player({ station, stationKey }: PlayerProps) {
   const [streamError, setStreamError] = useState(false);
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume;
-  }, [volume, isMuted]);
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
 
   useEffect(() => {
     if (!station?.streamUrl) return;
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.pause();
+    const handlePlaying = () => {
+      setIsPlaying(true);
+      setStreamError(false);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
+    const handleError = () => {
+      setIsPlaying(false);
+      setStreamError(true);
+    };
+
+    audio.addEventListener("playing", handlePlaying);
+    audio.addEventListener("pause", handlePause);
+    audio.addEventListener("error", handleError);
+
     setStreamError(false);
+    setIsPlaying(false);
+    setCover(FALLBACK_IMAGE);
+    audio.pause();
     audio.src = station.streamUrl;
     audio.load();
+    audio.volume = volume;
 
     const tryPlay = async () => {
       try {
         await audio.play();
-      } catch (err) {
-        setStreamError(true);
+      } catch {
+        setIsPlaying(false);
       }
     };
+
     tryPlay();
 
-    return () => audio.pause();
-  }, [station]);
+    return () => {
+      audio.pause();
+      audio.removeEventListener("playing", handlePlaying);
+      audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("error", handleError);
+    };
+  }, [station, volume]);
 
   useEffect(() => {
+    if (!stationKey) return;
+
     const fetchSongInfo = async () => {
       try {
-        const res = await fetch(`/api/spotify/${stationKey}`);
+        const res = await fetch(`/api/radios/${stationKey}`);
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok || !contentType.includes("application/json")) {
+          throw new Error(`Resposta invalida de /api/radios/${stationKey} (status ${res.status})`);
+        }
+
         const data = await res.json();
 
         const title = `${data.song} - ${data.artist}`;
         if (title !== lastTitle) {
-          setSong(data.song || "Música desconhecida");
-          setArtist(data.artist || "Artista desconhecido");
+          setSong(toTitleCase(data.song || "Música desconhecida"));
+          setArtist(toTitleCase(data.artist || "Artista desconhecido"));
           setCover(data.image || FALLBACK_IMAGE);
           setLastTitle(title);
         }
@@ -76,7 +122,25 @@ export default function Player({ station, stationKey }: PlayerProps) {
     return () => clearInterval(interval);
   }, [stationKey, lastTitle]);
 
-  const toggleMute = () => setIsMuted((prev) => !prev);
+  const stationCover = stationKey ? `/radio-nativa-${stationKey}.png` : FALLBACK_IMAGE;
+
+  const togglePlayback = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+      return;
+    }
+
+    setStreamError(false);
+
+    try {
+      await audio.play();
+    } catch {
+      setIsPlaying(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-4xl bg-[#060013]/90 text-white rounded-2xl shadow-2xl border border-[#1a1033] p-6 md:pl-24 relative overflow-hidden">
@@ -98,7 +162,7 @@ export default function Player({ station, stationKey }: PlayerProps) {
         <div className="col-span-1 flex flex-col items-center gap-4 relative">
           <motion.img
             key={`${stationKey}-bg`}
-            src={`/radio-nativa-${stationKey}.png`}
+            src={stationCover}
             alt={`Card da rádio ${station?.name}`}
             className="w-full h-44 rounded-lg object-cover shadow-lg blur-sm opacity-50"
           />
@@ -131,20 +195,16 @@ export default function Player({ station, stationKey }: PlayerProps) {
                   filter: "drop-shadow(0 0 6px #FD9200)",
                 }}
                 animate={
-                  isMuted
+                  !isPlaying
                     ? { height: "0.5rem", opacity: 0.2 }
                     : {
-                        height: [
-                          `${0.5 + Math.random() * 2}rem`,
-                          `${1 + Math.random() * 3}rem`,
-                          `${0.8 + Math.random() * 2.5}rem`,
-                        ],
+                        height: ["1.2rem", "2.4rem", "1.6rem"],
                         opacity: [0.7, 1, 0.9],
                       }
                 }
                 transition={{
                   duration: 0.7 + i * 0.1,
-                  repeat: isMuted ? 0 : Infinity,
+                  repeat: !isPlaying ? 0 : Infinity,
                   ease: "easeInOut",
                 }}
               ></motion.span>
@@ -171,8 +231,8 @@ export default function Player({ station, stationKey }: PlayerProps) {
 
           {/* Botão Play/Pause visual (mute real) */}
 <motion.button
-  onClick={toggleMute}
-  title={isMuted ? "Ativar som" : "Silenciar"}
+  onClick={togglePlayback}
+  title={isPlaying ? "Pausar" : "Tocar"}
   whileHover={{ scale: 1.1 }}
   whileTap={{ scale: 0.9 }}
   className="
@@ -186,13 +246,13 @@ export default function Player({ station, stationKey }: PlayerProps) {
 >
   <AnimatePresence mode="wait">
     <motion.div
-      key={isMuted ? "pause" : "play"}
+      key={isPlaying ? "pause" : "play"}
       initial={{ scale: 0.7, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.7, opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {isMuted ? <Pause size={32} /> : <Play size={32} />}
+      {isPlaying ? <Pause size={32} /> : <Play size={32} />}
     </motion.div>
   </AnimatePresence>
 </motion.button>

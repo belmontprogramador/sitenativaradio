@@ -51,8 +51,11 @@ export default function RootLayout({
         </main>
 
         {/* 🔹 FOOTER */}
-        <footer className="w-full bg-[#111] text-white text-center py-4 text-sm">
-          Impulsione MKT
+        <footer className="w-full bg-[#111] text-white py-4 text-sm">
+          <div className="container mx-auto flex flex-col gap-2 px-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
+            <span>Desenvolvido por Impulsione Soluções Digitais e Mkt.</span>
+            <span>(©) Todos os direitos reservados a Nativa On.</span>
+          </div>
         </footer>
       </body>
     </html>

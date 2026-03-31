@@ -1,34 +1,75 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BannerPrincipal from "@/components/BannerPrincipal";
 import BannerSecundario from "@/components/BannerSecundario";
 import Player from "@/components/Player";
 import CardGrid from "@/components/CardGrid";
 import DownloadApp from "@/components/DownloadApp";
 
-type StationKey = "popular" | "sertanejo" | "gospel" | "pagode";
+type RadioStation = {
+  id: string;
+  title: string;
+  streamUrl: string;
+  apiUrl: string;
+  isActive: boolean;
+  isDefault: boolean;
+  key: string;
+};
 
-const STATIONS = [
-  { key: "popular" as StationKey,   name: "Nativa Popular",   baseUrl: "https://stm1.playstm.com:7018", cover: "/radio-nativa-popular.png" },
-  { key: "pagode" as StationKey,    name: "Nativa Pagode",    baseUrl: "https://stm1.playstm.com:7022", cover: "/radio-nativa-pagode.png" },
-  { key: "sertanejo" as StationKey, name: "Nativa Sertanejo", baseUrl: "https://stm1.playstm.com:7014", cover: "/radio-nativa-sertanejo.png" },
-  { key: "gospel" as StationKey,    name: "Nativa Gospel",    baseUrl: "https://stm1.playstm.com:7016", cover: "/radio-nativa-gospel.png" },
-];
+const COVER_BY_KEY: Record<string, string> = {
+  popular: "/radio-nativa-popular.png",
+  pagode: "/radio-nativa-pagode.png",
+  sertanejo: "/radio-nativa-sertanejo.png",
+  gospel: "/radio-nativa-gospel.png",
+};
+
+const FALLBACK_COVER = "/favicon.ico.png";
 
 export default function Home() {
-  const [stationKey, setStationKey] = useState<StationKey>("popular");
+  const [radios, setRadios] = useState<RadioStation[]>([]);
+  const [stationKey, setStationKey] = useState<string>("");
+
+  useEffect(() => {
+    const loadRadios = async () => {
+      try {
+        const res = await fetch("/api/radios", { cache: "no-store" });
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok || !contentType.includes("application/json")) {
+          throw new Error(`Resposta invalida de /api/radios (status ${res.status})`);
+        }
+
+        const data = (await res.json()) as RadioStation[];
+
+        if (!Array.isArray(data) || data.length === 0) {
+          return;
+        }
+
+        setRadios(data);
+
+        const defaultRadio = data.find((radio) => radio.isDefault) || data[0];
+        setStationKey(defaultRadio.key);
+      } catch (error) {
+        console.error("Erro ao carregar radios:", error);
+      }
+    };
+
+    loadRadios();
+  }, []);
 
   const currentStation = useMemo(() => {
-    const s = STATIONS.find((st) => st.key === stationKey)!;
-    return { name: s.name, streamUrl: `${s.baseUrl}/stream` };
-  }, [stationKey]);
+    if (!radios.length || !stationKey) return null;
+    const selected = radios.find((radio) => radio.key === stationKey);
+    if (!selected) return null;
+    return { name: selected.title, streamUrl: selected.streamUrl };
+  }, [radios, stationKey]);
 
-  const cards = STATIONS.map((s) => ({
-    src: s.cover,
-    alt: s.name,
-    onClick: () => setStationKey(s.key),
-    active: s.key === stationKey,
+  const cards = radios.map((radio) => ({
+    src: COVER_BY_KEY[radio.key] || FALLBACK_COVER,
+    alt: radio.title,
+    onClick: () => setStationKey(radio.key),
+    active: radio.key === stationKey,
   }));
 
   return (

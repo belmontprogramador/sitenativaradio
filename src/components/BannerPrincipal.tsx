@@ -11,10 +11,17 @@ type SiteBanner = {
 
 const ROTATE_INTERVAL_MS = 8000;
 const FALLBACK_BANNER = "/BannerPrincipal.png";
+const DEFAULT_BANNER: SiteBanner = {
+  id: "default",
+  title: "Banner Principal",
+  imageUrl: FALLBACK_BANNER,
+  isActive: true,
+};
 
 export default function BannerPrincipal() {
   const [banners, setBanners] = useState<SiteBanner[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const displayBanners = banners.length > 0 ? [DEFAULT_BANNER, ...banners] : [DEFAULT_BANNER];
 
   useEffect(() => {
     const loadBanners = async () => {
@@ -47,21 +54,20 @@ export default function BannerPrincipal() {
   }, []);
 
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (displayBanners.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % banners.length);
+      setCurrentIndex((prev) => (prev + 1) % displayBanners.length);
     }, ROTATE_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [banners]);
+  }, [displayBanners.length]);
 
   useEffect(() => {
-    if (!banners.length) return;
-    setCurrentIndex((prev) => prev % banners.length);
-  }, [banners]);
+    setCurrentIndex((prev) => prev % displayBanners.length);
+  }, [displayBanners.length]);
 
-  const currentBanner = banners[currentIndex];
+  const currentBanner = displayBanners[currentIndex];
   const imageSrc = currentBanner?.imageUrl || FALLBACK_BANNER;
   const imageAlt = currentBanner?.title || "Banner Principal";
 
